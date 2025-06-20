@@ -114,7 +114,21 @@ extension DocumentReference {
         Publisher(self, includeMetadataChanges: includeMetadataChanges)
             .eraseToAnyPublisher()
     }
-    
+
+    public func publisherWithSnapshot<D: Decodable>(includeMetadataChanges: Bool = true, as type: D.Type, documentSnapshotMapper: @escaping (DocumentSnapshot) throws -> D? = DocumentSnapshot.defaultMapper()) -> AnyPublisher<(DocumentSnapshot, D?), Error> {
+        publisher(includeMetadataChanges: includeMetadataChanges)
+            .map {
+                do {
+                    let document = try documentSnapshotMapper($0)
+                    return ($0, document)
+                } catch {
+                    print("Document snapshot mapper error for \(self.path): \(error)")
+                    return ($0, nil)
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+
     public func publisher<D: Decodable>(includeMetadataChanges: Bool = true, as type: D.Type, documentSnapshotMapper: @escaping (DocumentSnapshot) throws -> D? = DocumentSnapshot.defaultMapper()) -> AnyPublisher<D?, Error> {
         publisher(includeMetadataChanges: includeMetadataChanges)
             .map {
