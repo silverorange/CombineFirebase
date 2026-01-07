@@ -131,6 +131,7 @@ extension DocumentReference {
                     return nil
                 }
             }
+            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
     

@@ -46,6 +46,7 @@ extension Query {
         publisher(includeMetadataChanges: includeMetadataChanges)
             .receive(on: queue)
             .map { querySnapshotMapper($0, documentSnapshotMapper) }
+            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
     
