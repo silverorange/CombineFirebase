@@ -36,8 +36,15 @@ extension Query {
             .eraseToAnyPublisher()
     }
     
-    public func publisher<D: Decodable>(includeMetadataChanges: Bool = true, as type: D.Type, documentSnapshotMapper: @escaping (DocumentSnapshot) throws -> D? = DocumentSnapshot.defaultMapper(), querySnapshotMapper: @escaping (QuerySnapshot, (DocumentSnapshot) throws -> D?) -> [D] = QuerySnapshot.defaultMapper()) -> AnyPublisher<[D], Error> {
+    public func publisher<D: Decodable>(
+        includeMetadataChanges: Bool = true,
+        as type: D.Type,
+        documentSnapshotMapper: @escaping (DocumentSnapshot) throws -> D? = DocumentSnapshot.defaultMapper(),
+        querySnapshotMapper: @escaping (QuerySnapshot, (DocumentSnapshot) throws -> D?) -> [D] = QuerySnapshot.defaultMapper(),
+        queue: DispatchQueue = DispatchQueue.main
+    ) -> AnyPublisher<[D], Error> {
         publisher(includeMetadataChanges: includeMetadataChanges)
+            .receive(on: queue)
             .map { querySnapshotMapper($0, documentSnapshotMapper) }
             .eraseToAnyPublisher()
     }
