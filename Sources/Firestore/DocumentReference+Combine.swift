@@ -115,8 +115,14 @@ extension DocumentReference {
             .eraseToAnyPublisher()
     }
     
-    public func publisher<D: Decodable>(includeMetadataChanges: Bool = true, as type: D.Type, documentSnapshotMapper: @escaping (DocumentSnapshot) throws -> D? = DocumentSnapshot.defaultMapper()) -> AnyPublisher<D?, Error> {
+    public func publisher<D: Decodable>(
+        includeMetadataChanges: Bool = true,
+        as type: D.Type,
+        documentSnapshotMapper: @escaping (DocumentSnapshot) throws -> D? = DocumentSnapshot.defaultMapper(),
+        queue: DispatchQueue = DispatchQueue.main
+    ) -> AnyPublisher<D?, Error> {
         publisher(includeMetadataChanges: includeMetadataChanges)
+            .receive(on: queue)
             .map {
                 do {
                     return try documentSnapshotMapper($0)
@@ -125,6 +131,7 @@ extension DocumentReference {
                     return nil
                 }
             }
+            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
     
